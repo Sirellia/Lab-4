@@ -1,0 +1,72 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Ввод K и N с клавиатуры
+K = int(input("Введите K: "))
+N = int(input("Введите N: "))
+
+A = np.random.randint(-10, 11, size=(N, N))
+
+E = A[:N//2, :N//2]
+D = A[N//2:, :N//2]
+C = A[N//2:, N//2:]
+B = A[:N//2, N//2:]
+
+def check_E(E):
+    s = np.sum(np.where(E > K, E, 0), axis=0)[1::2].sum()
+    p = np.prod(np.concatenate([E[0], E[:, -1], E[-1, ::-1], E[::-1, 0][1:-1]]))
+    return s > p
+
+if check_E(E):
+    F = np.vstack([np.hstack([D, B]), np.hstack([C, E])])
+else:
+    F = np.vstack([np.hstack([E, B]), np.hstack([C, D])])
+
+det_A = np.linalg.det(A)
+if det_A > np.sum(np.diag(F)):
+    F_inv = np.linalg.inv(F)
+    A_inv = np.linalg.inv(A)
+    res = np.dot(A, A_inv) - K * F_inv
+else:
+    G = np.tril(A, -1)
+    res = np.dot(A.T + G - F.T, K)
+
+# Вывод матриц и графиков
+print("Матрица A:")
+print(A)
+print("Матрица B:")
+print(B)
+print("Матрица C:")
+print(C)
+print("Матрица D:")
+print(D)
+print("Матрица E:")
+print(E)
+print("Матрица F:")
+print(F)
+print("Результат вычисления:")
+print(res)
+
+plt.figure()
+plt.subplot(2, 2, 1)
+plt.imshow(B)
+plt.title("Матрица B")
+plt.subplot(2, 2, 2)
+plt.imshow(C)
+plt.title("Матрица C")
+plt.subplot(2, 2, 3)
+plt.imshow(D)
+plt.title("Матрица D")
+plt.subplot(2, 2, 4)
+plt.imshow(E)
+plt.title("Матрица E")
+plt.show()
+
+plt.figure()
+plt.subplot(1, 2, 1)
+plt.imshow(A)
+plt.title("Матрица A")
+plt.subplot(1, 2, 2)
+plt.imshow(F)
+plt.title("Матрица F")
+plt.show()
