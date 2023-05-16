@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 K = int(input("Введите число K: "))
 N = int(input("Введите число N: "))
 
-A = np.zeros((2*N, 2*N), dtype=int)
+A = np.zeros((2 * N, 2 * N), dtype=int)
 
 A[:N, :N] = E = np.random.randint(-10, 10, (N, N))
 A[:N, N:] = B = np.random.randint(-10, 10, (N, N))
@@ -33,21 +33,19 @@ axes[1, 1].set_title("Матрица C")
 plt.tight_layout()
 plt.show()
 
-F = A.copy()
+F = np.zeros((2 * N, 2 * N), dtype=int)
 
-perimeter_product = np.prod([E[0, :], E[:, -1], E[-1, :], E[:, 0]])
+# Вычисление произведения чисел по периметру в матрице E
+perimeter_product = np.prod(np.concatenate([E[0, :], E[-1, :], E[1:-1, -1], E[1:-1, 0]]))
 
 odd_cols_sum = np.sum(E[:, 1::2][E[:, 1::2] > K])
 
 if odd_cols_sum > perimeter_product:
     F[:N, :N] = C
     F[N:, N:] = E
-    print("Симметрично")
 else:
-    F[:N, N:] = C
-    F[N:, N:] = B
-    print("Несимметрично")
-
+    F[:N, N:] = B
+    F[N:, :N] = D
 print("Конечная матрица F:")
 print(F)
 
@@ -64,3 +62,4 @@ print("Результат выражения:")
 print(expression)
 print("Произведение -", perimeter_product)
 print("Сумма -", odd_cols_sum)
+
