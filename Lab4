@@ -1,72 +1,62 @@
+#23.	Формируется матрица F следующим образом: скопировать в нее А и  если в Е сумма чисел, больших К в нечетных столбцах больше, чем произведение чисел по периметру, то поменять местами С и Е симметрично, иначе С и В поменять местами несимметрично. 
+При этом матрица А не меняется. После чего если определитель матрицы А больше суммы диагональных элементов матрицы F, 
+то вычисляется выражение: A*A-1 – K * F-1, иначе вычисляется выражение (AТ +G-FТ)*K, где G-нижняя треугольная матрица, полученная из А.  
+Выводятся по мере формирования А, F и все матричные операции последовательно.
+
+A= E B
+   D C
+
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Ввод K и N с клавиатуры
-K = int(input("Введите K: "))
-N = int(input("Введите N: "))
+K = int(input("Введите число K: "))
+N = int(input("Введите число N: "))
 
-A = np.random.randint(-10, 11, size=(N, N))
+A = np.zeros((2*N, 2*N), dtype=int)
 
-E = A[:N//2, :N//2]
-D = A[N//2:, :N//2]
-C = A[N//2:, N//2:]
-B = A[:N//2, N//2:]
+A[:N, :N] = E = np.random.randint(-10, 10, (N, N))
+A[:N, N:] = B = np.random.randint(-10, 10, (N, N))
+A[N:, :N] = D = np.random.randint(-10, 10, (N, N))
+A[N:, N:] = C = np.random.randint(-10, 10, (N, N))
+print("Исходная матрица A:")
+print(A)
 
-def check_E(E):
-    s = np.sum(np.where(E > K, E, 0), axis=0)[1::2].sum()
-    p = np.prod(np.concatenate([E[0], E[:, -1], E[-1, ::-1], E[::-1, 0][1:-1]]))
-    return s > p
+fig, axes = plt.subplots(2, 2)
+axes[0, 0].imshow(E, cmap='hot', vmin=-10, vmax=10)
+axes[0, 0].set_title("Матрица E")
+axes[0, 1].imshow(B, cmap='hot', vmin=-10, vmax=10)
+axes[0, 1].set_title("Матрица B")
+axes[1, 0].imshow(D, cmap='hot', vmin=-10, vmax=10)
+axes[1, 0].set_title("Матрица D")
+axes[1, 1].imshow(C, cmap='hot', vmin=-10, vmax=10)
+axes[1, 1].set_title("Матрица C")
+plt.tight_layout()
+plt.show()
 
-if check_E(E):
-    F = np.vstack([np.hstack([D, B]), np.hstack([C, E])])
+F = A.copy()
+
+perimeter_product = np.prod([E[0, :], E[:, -1], E[-1, :], E[:, 0]])
+
+odd_cols_sum = np.sum(E[:, 1::2][E[:, 1::2] > K])
+
+if odd_cols_sum > perimeter_product:
+    F[:N, :N] = C
+    F[N:, N:] = E
 else:
-    F = np.vstack([np.hstack([E, B]), np.hstack([C, D])])
+    F[:N, N:] = C
+    F[N:, N:] = B
+
+print("Конечная матрица F:")
+print(F)
 
 det_A = np.linalg.det(A)
-if det_A > np.sum(np.diag(F)):
-    F_inv = np.linalg.inv(F)
-    A_inv = np.linalg.inv(A)
-    res = np.dot(A, A_inv) - K * F_inv
+sum_diag_F = np.sum(np.diag(F))
+
+if det_A > sum_diag_F:
+    expression = np.matmul(A, np.linalg.inv(A)) - K * np.linalg.inv(F)
 else:
-    G = np.tril(A, -1)
-    res = np.dot(A.T + G - F.T, K)
+    G = np.tril(A)
+    expression = (np.transpose(A) + G - np.transpose(F)) * K
 
-# Вывод матриц и графиков
-print("Матрица A:")
-print(A)
-print("Матрица B:")
-print(B)
-print("Матрица C:")
-print(C)
-print("Матрица D:")
-print(D)
-print("Матрица E:")
-print(E)
-print("Матрица F:")
-print(F)
-print("Результат вычисления:")
-print(res)
-
-plt.figure()
-plt.subplot(2, 2, 1)
-plt.imshow(B)
-plt.title("Матрица B")
-plt.subplot(2, 2, 2)
-plt.imshow(C)
-plt.title("Матрица C")
-plt.subplot(2, 2, 3)
-plt.imshow(D)
-plt.title("Матрица D")
-plt.subplot(2, 2, 4)
-plt.imshow(E)
-plt.title("Матрица E")
-plt.show()
-
-plt.figure()
-plt.subplot(1, 2, 1)
-plt.imshow(A)
-plt.title("Матрица A")
-plt.subplot(1, 2, 2)
-plt.imshow(F)
-plt.title("Матрица F")
-plt.show()
+print("Результат выражения:")
+print(expression)
